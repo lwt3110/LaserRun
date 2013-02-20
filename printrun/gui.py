@@ -77,96 +77,16 @@ class LeftPane(wx.GridBagSizer):
         root.xyfeedc.SetToolTip(wx.ToolTip("Set Maximum Speed for X & Y axes (mm/min)"))
         llts.Add(wx.StaticText(root.panel,-1, _("XY:")), flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
         llts.Add(root.xyfeedc)
-#        llts.Add(wx.StaticText(root.panel,-1, _("mm/min   Z:")), flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        llts.Add(wx.StaticText(root.panel,-1, _("mm/min   Z:")), flag = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
         root.zfeedc = wx.SpinCtrl(root.panel,-1, str(root.settings.z_feedrate), min = 0, max = 50000, size = (70,-1))
         root.zfeedc.SetToolTip(wx.ToolTip("Set Maximum Speed for Z axis (mm/min)"))
-#        llts.Add(root.zfeedc,)
+        llts.Add(root.zfeedc,)
 
-        root.monitorbox = wx.CheckBox(root.panel,-1, _("Watch"))
-        root.monitorbox.SetToolTip(wx.ToolTip("Monitor Temperatures in Graph"))
- #      self.Add(root.monitorbox, pos = (2, 6))
-        root.monitorbox.Bind(wx.EVT_CHECKBOX, root.setmonitor)
-
- #       self.Add(wx.StaticText(root.panel,-1, _("Heat:")), pos = (2, 0), span = (1, 1), flag = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT)
-        htemp_choices = [root.temps[i]+" ("+i+")" for i in sorted(root.temps.keys(), key = lambda x:root.temps[x])]
-
-        root.settoff = make_button(root.panel, _("Off"), lambda e: root.do_settemp("off"), _("Switch Hotend Off"), size = (36,-1), style = wx.BU_EXACTFIT)
-        root.printerControls.append(root.settoff)
-#		self.Add(root.settoff, pos = (2, 1), span = (1, 1))
-
-        if root.settings.last_temperature not in map(float, root.temps.values()):
-            htemp_choices = [str(root.settings.last_temperature)] + htemp_choices
-        root.htemp = wx.ComboBox(root.panel, -1,
-                choices = htemp_choices, style = wx.CB_DROPDOWN, size = (70,-1))
-        root.htemp.SetToolTip(wx.ToolTip("Select Temperature for Hotend"))
-        root.htemp.Bind(wx.EVT_COMBOBOX, root.htemp_change)
-
-#       self.Add(root.htemp, pos = (2, 2), span = (1, 2))
-        root.settbtn = make_button(root.panel, _("Set"), root.do_settemp, _("Switch Hotend On"), size = (38, -1), style = wx.BU_EXACTFIT)
-        root.printerControls.append(root.settbtn)
-#       self.Add(root.settbtn, pos = (2, 4), span = (1, 1))
-
-#       self.Add(wx.StaticText(root.panel,-1, _("Bed:")), pos = (3, 0), span = (1, 1), flag = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT)
-        btemp_choices = [root.bedtemps[i]+" ("+i+")" for i in sorted(root.bedtemps.keys(), key = lambda x:root.temps[x])]
-
-        root.setboff = make_button(root.panel, _("Off"), lambda e:root.do_bedtemp("off"), _("Switch Heated Bed Off"), size = (36,-1), style = wx.BU_EXACTFIT)
-        root.printerControls.append(root.setboff)
-#        self.Add(root.setboff, pos = (3, 1), span = (1, 1))
-
-        if root.settings.last_bed_temperature not in map(float, root.bedtemps.values()):
-            btemp_choices = [str(root.settings.last_bed_temperature)] + btemp_choices
-        root.btemp = wx.ComboBox(root.panel, -1,
-                choices = btemp_choices, style = wx.CB_DROPDOWN, size = (70,-1))
-        root.btemp.SetToolTip(wx.ToolTip("Select Temperature for Heated Bed"))
-        root.btemp.Bind(wx.EVT_COMBOBOX, root.btemp_change)
-#        self.Add(root.btemp, pos = (3, 2), span = (1, 2))
-
-        root.setbbtn = make_button(root.panel, _("Set"), root.do_bedtemp, ("Switch Heated Bed On"), size = (38, -1), style = wx.BU_EXACTFIT)
-        root.printerControls.append(root.setbbtn)
-  #      self.Add(root.setbbtn, pos = (3, 4), span = (1, 1))
-
-        root.btemp.SetValue(str(root.settings.last_bed_temperature))
-        root.htemp.SetValue(str(root.settings.last_temperature))
-
-        ## added for an error where only the bed would get (pla) or (abs).
-        #This ensures, if last temp is a default pla or abs, it will be marked so.
-        # if it is not, then a (user) remark is added. This denotes a manual entry
-
-        for i in btemp_choices:
-            if i.split()[0] == str(root.settings.last_bed_temperature).split('.')[0] or i.split()[0] == str(root.settings.last_bed_temperature):
-                root.btemp.SetValue(i)
-        for i in htemp_choices:
-            if i.split()[0] == str(root.settings.last_temperature).split('.')[0] or i.split()[0] == str(root.settings.last_temperature) :
-                root.htemp.SetValue(i)
-
-        if( '(' not in root.btemp.Value):
-            root.btemp.SetValue(root.btemp.Value + ' (user)')
-        if( '(' not in root.htemp.Value):
-            root.htemp.SetValue(root.htemp.Value + ' (user)')
-
-        root.tempdisp = wx.StaticText(root.panel,-1, "")
-
-        root.edist = wx.SpinCtrl(root.panel,-1, "5", min = 0, max = 1000, size = (60,-1))
-        root.edist.SetBackgroundColour((225, 200, 200))
-        root.edist.SetForegroundColour("black")
-   #     self.Add(root.edist, pos = (4, 2), span = (1, 2))
-   #    self.Add(wx.StaticText(root.panel,-1, _("mm")), pos = (4, 4), span = (1, 1))
-        root.edist.SetToolTip(wx.ToolTip("Amount to Extrude or Retract (mm)"))
-        root.efeedc = wx.SpinCtrl(root.panel,-1, str(root.settings.e_feedrate), min = 0, max = 50000, size = (60,-1))
-        root.efeedc.SetToolTip(wx.ToolTip("Extrude / Retract speed (mm/min)"))
-        root.efeedc.SetBackgroundColour((225, 200, 200))
-        root.efeedc.SetForegroundColour("black")
-        root.efeedc.Bind(wx.EVT_SPINCTRL, root.setfeeds)
-#        self.Add(root.efeedc, pos = (5, 2), span = (1, 2))
- #       self.Add(wx.StaticText(root.panel,-1, _("mm/\nmin")), pos = (5, 4), span = (1, 1))
         root.xyfeedc.Bind(wx.EVT_SPINCTRL, root.setfeeds)
         root.zfeedc.Bind(wx.EVT_SPINCTRL, root.setfeeds)
         root.zfeedc.SetBackgroundColour((180, 255, 180))
         root.zfeedc.SetForegroundColour("black")
 
-        root.graph = Graph(root.panel, wx.ID_ANY)
-  #      self.Add(root.graph, pos = (3, 5), span = (3, 3))
-   #     self.Add(root.tempdisp, pos = (6, 0), span = (1, 9))
 
 class VizPane(wx.BoxSizer):
 
@@ -223,7 +143,7 @@ class MainToolbar(wx.BoxSizer):
 
         root.serialport = wx.ComboBox(root.panel, -1,
                 choices = root.scanserial(),
-                style = wx.CB_DROPDOWN, size = (100, 25))
+                style = wx.CB_DROPDOWN, size = (235, 25))
         root.serialport.SetToolTip(wx.ToolTip("Select Port Printer is connected to"))
         root.rescanports()
         self.Add(root.serialport)
